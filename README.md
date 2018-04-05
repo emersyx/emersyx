@@ -1,7 +1,7 @@
-# emersyx_core [![Build Status][build-img]][build-url] [![Go Report Card][gorep-img]][gorep-url]
+# emersyx [![Build Status][build-img]][build-url] [![Go Report Card][gorep-img]][gorep-url]
 
-The core component of emersyx. This component starts the emersyx process, reads configuration files, and loads the
-routers, receptors and processors.
+This is the main repository of the emersyx project. The repository contains the code for the emersyx core, the APIs for
+the officially supported services and the code for the events router.
 
 [build-img]: https://travis-ci.org/emersyx/emersyx_core.svg?branch=master
 [build-url]: https://travis-ci.org/emersyx/emersyx_core
