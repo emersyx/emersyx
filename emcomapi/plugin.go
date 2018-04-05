@@ -45,41 +45,41 @@ func NewRouter(plug *plugin.Plugin) (Router, error) {
 	return fc()
 }
 
-// NewProcessorOptions calls the function with the same name exported by the specified plugin and returns the same value
-// returned by the exported function.
-func NewProcessorOptions(plug *plugin.Plugin) (ProcessorOptions, error) {
+// NewPeripheralOptions calls the function with the same name exported by the specified plugin and returns the same
+// value returned by the exported function.
+func NewPeripheralOptions(plug *plugin.Plugin) (PeripheralOptions, error) {
 	if plug == nil {
 		return nil, errors.New("invalid plugin handle")
 	}
 
-	f, err := plug.Lookup("NewProcessorOptions")
+	f, err := plug.Lookup("NewPeripheralOptions")
 	if err != nil {
-		return nil, errors.New("the processor plugin does not have the NewProcessorOptions symbol")
+		return nil, errors.New("the peripheral plugin does not have the NewPeripheralOptions symbol")
 	}
 
-	fc, ok := f.(func() (ProcessorOptions, error))
+	fc, ok := f.(func() (PeripheralOptions, error))
 	if ok == false {
-		return nil, errors.New("the NewProcessorOptions function does not have the correct signature")
+		return nil, errors.New("the NewPeripheralOptions function does not have the correct signature")
 	}
 
 	return fc()
 }
 
-// NewProcessor calls the function with the same name exported by the specified plugin and returns the same value
+// NewPeripheral calls the function with the same name exported by the specified plugin and returns the same value
 // returned by the exported function.
-func NewProcessor(plug *plugin.Plugin, options ...func(Processor) error) (Processor, error) {
+func NewPeripheral(plug *plugin.Plugin, options ...func(Peripheral) error) (Peripheral, error) {
 	if plug == nil {
 		return nil, errors.New("invalid plugin handle")
 	}
 
-	f, err := plug.Lookup("NewProcessor")
+	f, err := plug.Lookup("NewPeripheral")
 	if err != nil {
-		return nil, errors.New("the processor plugin does not have the NewProcessor symbol")
+		return nil, errors.New("the peripheral plugin does not have the NewPeripheral symbol")
 	}
 
-	fc, ok := f.(func(options ...func(Processor) error) (Processor, error))
+	fc, ok := f.(func(options ...func(Peripheral) error) (Peripheral, error))
 	if ok == false {
-		return nil, errors.New("the NewProcessor function does not have the correct signature")
+		return nil, errors.New("the NewPeripheral function does not have the correct signature")
 	}
 
 	return fc(options...)
