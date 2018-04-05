@@ -1,4 +1,4 @@
-package emcomapi
+package api
 
 const (
 	// CoreID is the constant value returned by the CoreEvent.GetSourceIdentifier method. All emersyx components can use

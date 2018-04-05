@@ -1,4 +1,4 @@
-package emcomapi
+package api
 
 import (
 	"io"

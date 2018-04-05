@@ -1,4 +1,4 @@
-package emtgapi
+package api
 
 import (
 	"emersyx.net/emersyx_apis/emcomapi"
