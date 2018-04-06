@@ -1,9 +1,5 @@
 package api
 
-import (
-	"emersyx.net/emersyx_apis/emcomapi"
-)
-
 // These constant values must be used for the Command member of the Message struct.
 const (
 	DISCONNECTED = "DISCONNECTED"
@@ -14,8 +10,8 @@ const (
 )
 
 // IRCMessage is the basic structure for an IRC message received by the client when an event occurs. Names of the struct
-// members have been taken from RFC-1459 and RFC-2812. This is the structure which implements the emcomapi.Event
-// interface for IRC events.
+// members have been taken from RFC-1459 and RFC-2812. This is the structure which implements the Event interface for
+// IRC events.
 type IRCMessage struct {
 	Source     string
 	Raw        string
@@ -25,15 +21,15 @@ type IRCMessage struct {
 }
 
 // GetSourceIdentifier returns the identifier of the IRCGateway instance which generated the emersyx event.
-func (m Message) GetSourceIdentifier() string {
+func (m IRCMessage) GetSourceIdentifier() string {
 	return m.Source
 }
 
 // IRCGateway is the interface which for an IRC peripheral and receptor. The reference implementation at
 // https://github.com/emersyx/emersyx_irc follows this interface.
 type IRCGateway interface {
-	emcomapi.Peripheral
-	emcomapi.Receptor
+	Peripheral
+	Receptor
 	// Connect must start the connection process to the selected IRC server. This must be a blocking method. When the
 	// method returns, the IRCResource must connected to the IRC server if the return value is nil. Otherwise, it is
 	// considered that an error occurred and the connection was not possible.

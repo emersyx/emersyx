@@ -1,7 +1,7 @@
 package main
 
 import (
-	"emersyx.net/emersyx_apis/emcomapi"
+	"emersyx.net/emersyx/api"
 )
 
 func main() {
@@ -16,7 +16,7 @@ func main() {
 
 	initRouter(rtr, gws, procs, routes)
 
-	ce := emcomapi.NewCoreEvent(emcomapi.CoreUpdate, emcomapi.ComponentsLoaded)
+	ce := emcomapi.NewCoreEvent(api.CoreUpdate, api.ComponentsLoaded)
 	for _, gw := range gws {
 		if ch := gw.GetEventsInChannel(); ch != nil {
 			ch <- ce

@@ -1,9 +1,5 @@
 package api
 
-import (
-	"emersyx.net/emersyx_apis/emcomapi"
-)
-
 // EUpdate is the implementation of an Event type for the Telegram gateway in emersyx. Although the Telegram Bot API
 // offers the Update type which has similar purposes, it was decided to make use of an EUpdate type in order to have the
 // standard types follow the official documentation. As such, the mandatory source field and GetSourceIdentifier method
@@ -44,8 +40,8 @@ type TelegramParameters interface {
 // The TelegramGateway interface specifies the methods that must be implemented by a complete Telegram receptor and
 // resource. The reference implementation at https://github.com/emersyx/emersyx_telegram follows this interface.
 type TelegramGateway interface {
-	emcomapi.Peripheral
-	emcomapi.Receptor
+	Peripheral
+	Receptor
 	// This method must call the getMe method from the Telegram Bot API. It must return the response formatted into a
 	// User instance.
 	GetMe() (User, error)

@@ -1,9 +1,7 @@
 package main
 
 import (
-	"emersyx.net/emersyx_apis/emcomapi"
-	"emersyx.net/emersyx_apis/emircapi"
-	"emersyx.net/emersyx_apis/emtgapi"
+	"emersyx.net/emersyx/api"
 	"emersyx.net/emersyx_log/emlog"
 	"flag"
 	"fmt"
@@ -145,9 +143,9 @@ func newIRCGateway(cfg ircGatewayConfig) emircapi.IRCGateway {
 }
 
 // loadIRCGateways creates and initializez emircapi.IRCGateway objects for all IRC gateways specified in the emersyx
-// configuration file. The objects are returned in an array of type []emcomapi.Identifiable.
-func loadIRCGateways() []emcomapi.Gateway {
-	gws := make([]emcomapi.Gateway, len(ec.IRCGateways))
+// configuration file. The objects are returned in an array of type []api.Identifiable.
+func loadIRCGateways() []api.Gateway {
+	gws := make([]api.Gateway, len(ec.IRCGateways))
 
 	for i, cfg := range ec.IRCGateways {
 		gws[i] = newIRCGateway(cfg)
@@ -188,9 +186,9 @@ func newTelegramGateway(cfg telegramGatewayConfig) emtgapi.TelegramGateway {
 }
 
 // loadTelegramGateways creates and initializez emtgapi.TelegramGateway objects for all Telegram gateways specified in
-// the emersyx configuration file. The objects are returned in an array of type []emcomapi.Identifiable.
-func loadTelegramGateways() []emcomapi.Gateway {
-	gws := make([]emcomapi.Gateway, len(ec.TelegramGateways))
+// the emersyx configuration file. The objects are returned in an array of type []api.Identifiable.
+func loadTelegramGateways() []api.Gateway {
+	gws := make([]api.Gateway, len(ec.TelegramGateways))
 
 	for i, cfg := range ec.TelegramGateways {
 		gws[i] = newTelegramGateway(cfg)
@@ -200,9 +198,9 @@ func loadTelegramGateways() []emcomapi.Gateway {
 }
 
 // initGateways creates and initializez objects for all gateways specified in the emersyx configuration file. The
-// objects are returned in an array of type []emcomapi.Identifiable.
-func initGateways() []emcomapi.Gateway {
-	gws := make([]emcomapi.Gateway, 0)
+// objects are returned in an array of type []api.Identifiable.
+func initGateways() []api.Gateway {
+	gws := make([]api.Gateway, 0)
 
 	irc := loadIRCGateways()
 	gws = append(gws, irc...)
@@ -213,20 +211,20 @@ func initGateways() []emcomapi.Gateway {
 	return gws
 }
 
-// initProcessors creates and initializez emcomapi.Processor objects for all processors specified in the emersyx
-// configuration file. The objects are returned in an array of type []emcomapi.Processor.
-func initProcessors(rtr emcomapi.Router) []emcomapi.Processor {
-	procs := make([]emcomapi.Processor, len(ec.Processors))
+// initProcessors creates and initializez api.Processor objects for all processors specified in the emersyx
+// configuration file. The objects are returned in an array of type []api.Processor.
+func initProcessors(rtr api.Router) []api.Processor {
+	procs := make([]api.Processor, len(ec.Processors))
 
 	for i, pcfg := range ec.Processors {
 		p := getPlugin(pcfg.PluginPath)
-		opts, err := emcomapi.NewProcessorOptions(p)
+		opts, err := api.NewProcessorOptions(p)
 		if err != nil {
 			el.Errorln(err.Error())
 			el.Fatalln("error occured while creating a new ProcessorOptions instance")
 		}
 
-		proc, err := emcomapi.NewProcessor(p,
+		proc, err := api.NewProcessor(p,
 			opts.Identifier(pcfg.Identifier),
 			opts.Config(pcfg.Config),
 			opts.Router(rtr),
@@ -248,7 +246,7 @@ func initProcessors(rtr emcomapi.Router) []emcomapi.Processor {
 }
 
 // initRoutes formats the route information from the global emersyxConfig instance (initialized via loadConfig) such
-// that it can be passed as argument to the emcomapi.RouterOptions.Routes method.
+// that it can be passed as argument to the api.RouterOptions.Routes method.
 func initRoutes() map[string][]string {
 	var m = make(map[string][]string)
 
@@ -267,11 +265,11 @@ func initRoutes() map[string][]string {
 	return m
 }
 
-// newRouter creates an emcomapi.Router object as specified in the emersyx configuration file. Under the hood, the
-// emcomapi.NewRouter function is used.
-func newRouter() emcomapi.Router {
+// newRouter creates an api.Router object as specified in the emersyx configuration file. Under the hood, the
+// api.NewRouter function is used.
+func newRouter() api.Router {
 	p := getPlugin(ec.Router.PluginPath)
-	rtr, err := emcomapi.NewRouter(p)
+	rtr, err := api.NewRouter(p)
 	if err != nil {
 		el.Errorln(err.Error())
 		el.Fatalln("error occured while creating a new router")
@@ -280,11 +278,11 @@ func newRouter() emcomapi.Router {
 }
 
 // initRouter sets the options on the provided Router object. The options include Gateways, Processors and Routes. Under
-// the hood, an emcomapi.RouterOptions object is used together with emcomapi.Router.SetOptions.
+// the hood, an api.RouterOptions object is used together with api.Router.SetOptions.
 func initRouter(
-	rtr emcomapi.Router,
-	gws []emcomapi.Gateway,
-	procs []emcomapi.Processor,
+	rtr api.Router,
+	gws []api.Gateway,
+	procs []api.Processor,
 	routes map[string][]string,
 ) {
 	if gws == nil || len(gws) == 0 {
@@ -303,9 +301,9 @@ func initRouter(
 		}
 	}
 
-	optarg := make([]func(emcomapi.Router) error, 0)
+	optarg := make([]func(api.Router) error, 0)
 	p := getPlugin(ec.Router.PluginPath)
-	opt, err := emcomapi.NewRouterOptions(p)
+	opt, err := api.NewRouterOptions(p)
 	if err != nil {
 		el.Errorln(err.Error())
 		el.Fatalln("error occured while creating a new RouterOptions instance")

@@ -32,14 +32,6 @@ type Router interface {
 	Run() error
 }
 
-// Core is the interface which must be implemented by the emersyx core component. This interface defines all the core
-// services which can be performed for any emersyx component.
-type Core interface {
-	// GetPeripheral must search for the Peripheral object loaded by the emersyx core. If such an instance is found,
-	// then it must be returned.
-	GetPeripheral(id string) (Peripheral, error)
-}
-
 // Event is the interface for all events supported by the various emersyx components. Event routers should use this type
 // if they are to support two or more event types. If event routers only support one event type (e.g. emircapi.Message
 // or emtgapi.Update), then they can use that particular type directly.

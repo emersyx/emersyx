@@ -1,5 +1,5 @@
 emersyx: goget
-	@go build -o emersyx ./core/* ./router/*
+	@go build -o emersyx ./core/*
 
 .PHONY: goget
 goget:
