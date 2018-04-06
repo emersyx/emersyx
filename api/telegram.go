@@ -37,8 +37,8 @@ type TelegramParameters interface {
 	ReplyMarkup(value string) error
 }
 
-// The TelegramGateway interface specifies the methods that must be implemented by a complete Telegram receptor and
-// resource. The reference implementation at https://github.com/emersyx/emersyx_telegram follows this interface.
+// The TelegramGateway interface specifies the methods that must be implemented by a complete Telegram peripheral and
+// receptor. The reference implementation at https://github.com/emersyx/emersyx_telegram follows this interface.
 type TelegramGateway interface {
 	Peripheral
 	Receptor
@@ -49,7 +49,7 @@ type TelegramGateway interface {
 	// formatted into a Message object.
 	SendMessage(params TelegramParameters) (Message, error)
 	// This method must return a new TelegramParameters instance which can be used as argument to the other methods of
-	// the TelegramResource type.
+	// the TelegramGateway type.
 	NewTelegramParameters() TelegramParameters
 }
 

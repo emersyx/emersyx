@@ -32,11 +32,10 @@ type Router interface {
 	Run() error
 }
 
-// Event is the interface for all events supported by the various emersyx components. Event routers should use this type
-// if they are to support two or more event types. If event routers only support one event type (e.g. emircapi.Message
-// or emtgapi.Update), then they can use that particular type directly.
+// Event is the interface for all events supported by the various emersyx components. The emersyx event router uses this
+// type to support multiple event types.
 type Event interface {
-	// GetSourceIdentifier must return the identifier of the emersyx receptor which generated the event.
+	// GetSourceIdentifier must return the identifier of the emersyx peripheral which generated the event.
 	GetSourceIdentifier() string
 }
 
@@ -58,8 +57,8 @@ type PeripheralOptions interface {
 }
 
 // Peripheral is a low-level interface (w.r.t. hierarchy of types in the emersyx framework) for all components which
-// have to be uniquely identifiable. This includes gateways (components which are either resources, receptors or both
-// simultaneously) and processors.
+// have to be uniquely identifiable. This includes gateways and processors (regardless of the implementation of the
+// Receptor interface).
 type Peripheral interface {
 	// GetIdentifier must return the identifier of the peripheral.
 	GetIdentifier() string
