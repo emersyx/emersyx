@@ -1,71 +1,56 @@
 package main
 
 import (
+	"fmt"
 	"github.com/BurntSushi/toml"
+	"io"
 )
 
 // ec is the emersyxConfig global instance which holds all values from the config file.
 var ec emersyxConfig
 
-// processorConfig is the struct for holding processor configuration values from the emersyx configuration file.
-type processorConfig struct {
+// peripheralConfig is the struct for holding processor configuration values from the emersyx configuration file.
+type peripheralConfig struct {
 	Identifier string
-	Config     string
-	PluginPath string `toml:"plugin_path"`
-}
-
-// ircGatewayConfig is the struct for holding IRC gateway configuration values from the emersyx configuration file.
-type ircGatewayConfig struct {
-	Identifier    *string
-	Nick          *string
-	Ident         *string
-	Name          *string
-	Version       *string
-	ServerAddress *string `toml:"server_address"`
-	ServerPort    *uint   `toml:"server_port"`
-	ServerUseSSL  *bool   `toml:"server_use_ssl"`
-	QuitMessage   *string `toml:"quit_message"`
-	PluginPath    *string `toml:"plugin_path"`
-}
-
-// telegramGatewayConfig is the struct for holding Telegram gateway configuration values from the emersyx configuration
-// file.
-type telegramGatewayConfig struct {
-	Identifier     *string
-	APIToken       *string   `toml:"api_token"`
-	UpdatesLimit   *uint     `toml:"updates_limit"`
-	UpdatesTimeout *uint     `toml:"updates_timeout"`
-	UpdatesAllowed *[]string `toml:"updates_allowed"`
-	PluginPath     *string   `toml:"plugin_path"`
-}
-
-// routerConfig is the struct for holding router configuration values from the emersyx configuration file.
-type routerConfig struct {
+	ConfigPath string `toml:"config_path"`
 	PluginPath string `toml:"plugin_path"`
 }
 
 // routeConfig is the struct for holding route configuration values from the emersyx configuration file.
 type routeConfig struct {
-	Source      string
-	Destination []string
+	Source       string
+	Destinations []string
 }
 
 // emersyxConfig is the container struct for holding all configuration values from the emersyx configuration file.
 type emersyxConfig struct {
-	Processors       []processorConfig
-	IRCGateways      []ircGatewayConfig
-	TelegramGateways []telegramGatewayConfig
-	Router           routerConfig
-	Routes           []routeConfig
+	LogStdout   bool   `toml:"log_stdout"`
+	LogFile     string `toml:"log_file"`
+	LogLevel    uint   `toml:"log_level"`
+	LogWriter   io.Writer
+	Peripherals []peripheralConfig
+	Routes      []routeConfig
 }
 
-// loadConfig opens, reads and parses the toml configuration file specified as command line argument. The parseFlags
-// function needs to be called before this one.
+// loadConfig opens, reads and parses the toml configuration file specified as command line argument. This function must
+// be called after parseFlags().
 func loadConfig() {
 	// read the parameters from the specified configuration file
 	_, err := toml.DecodeFile(*flConfFile, &ec)
 	if err != nil {
-		el.Errorln(err.Error())
-		el.Fatalln("error occured while loading the configuration file")
+		// use fmt.Printf as the logger has not been initialized yet
+		fmt.Printf(err.Error())
+		fmt.Printf("error occured while loading the configuration file")
+	}
+
+	// the command line argument have priority over the values from the config file
+	if flLogStdout != nil {
+		ec.LogStdout = *flLogStdout
+	}
+	if flLogFile != nil {
+		ec.LogFile = *flLogFile
+	}
+	if flLogLevel != nil {
+		ec.LogLevel = *flLogLevel
 	}
 }

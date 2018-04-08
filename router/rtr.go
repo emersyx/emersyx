@@ -1,30 +1,30 @@
 package router
 
 import (
-	"emersyx.net/emersyx/apis"
-	"emersyx.net/emersyx_log/emlog"
+	"emersyx.net/emersyx/api"
+	"emersyx.net/emersyx/log"
 	"errors"
-	"sync"
+	"fmt"
 )
 
 // Router provides the functionality to route emersyx events between the different components (i.e. the core plus
 // peripherals) loaded by emersyx.
 type Router struct {
-	peripherals []api.Peripheral
-	routes      map[string][]string
-	log         *emlog.EmersyxLogger
-	sink        chan api.Event
+	core   api.Core
+	routes map[string][]string
+	log    *log.EmersyxLogger
+	sink   chan api.Event
 }
 
 // NewRouter creates a new router instance, applies the options given as argument, checks for error conditions and if
 // none are met, returns the object.
-func NewRouter() (Router, error) {
+func NewRouter(options ...func(*Router) error) (*Router, error) {
 	var err error
 
-	rtr := new(router)
+	rtr := new(Router)
 
 	// generate a logger, to be updated via options
-	rtr.log, err = emlog.NewEmersyxLogger(nil, "emrtr", emlog.ELNone)
+	rtr.log, err = log.NewEmersyxLogger(nil, "emrtr", log.ELNone)
 	if err != nil {
 		return nil, errors.New("could not create a bare logger")
 	}
@@ -36,16 +36,16 @@ func NewRouter() (Router, error) {
 	for _, option := range options {
 		err := option(rtr)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	// check that the peripherals and routes have been set
-	if rtr.peripherals == nil {
-		return errors.New("the Peripherals option has not been set")
+	// check if the mandatory options have been set
+	if rtr.core == nil {
+		return nil, errors.New("the Core option has not been set")
 	}
 	if rtr.routes == nil {
-		return errors.New("the Routes option has not been set")
+		return nil, errors.New("the Routes option has not been set")
 	}
 
 	return rtr, nil
@@ -54,31 +54,32 @@ func NewRouter() (Router, error) {
 // Run starts receiving events from peripherals. The events are forwarded to other peripherals based on the configured
 // routes. The forwardEvent method is used for this purpose.
 func (rtr *Router) Run() error {
-	// iterate through all peripherals
-	r.log.Debugln("funelling all gateways to the sink channel")
-	for _, prl := range r.peripherals {
-		// check if they are also receptors
+	rtr.log.Debugln("funelling all gateways to the sink channel")
+	fn := func(prl api.Peripheral) {
+		// check if the peripheral is also a receptor
 		if rec, ok := prl.(api.Receptor); ok {
-			funnelEvents(rec.GetEventsOutChannel())
+			rtr.funnelEvents(rec.GetEventsOutChannel())
 		}
 	}
+	// iterate through all peripherals
+	rtr.core.ForEachPeripheral(fn)
 
 	// start an infinite loop where events are received from the sink channel and forwarded to peripherals based on the
 	// configured routes
-	r.log.Debugln("start forwarding events")
-	for ev := range sink {
-		if err := r.forwardEvent(ev); err != nil {
+	rtr.log.Debugln("start forwarding events")
+	for ev := range rtr.sink {
+		if err := rtr.forwardEvent(ev); err != nil {
 			return err
 		}
 	}
 
-	r.log.Debugln("exiting the router.Run method")
+	rtr.log.Debugln("exiting the router.Run method")
 	return nil
 }
 
 // funnelEvents starts a goroutine which receives events from a source channel and pushes them down the router's sink
 // channel.
-func (rtr *Router) funnelEvents(sink chan api.Event, source <-chan api.Event) {
+func (rtr *Router) funnelEvents(source <-chan api.Event) {
 	if source != nil {
 		go func() {
 			for ev := range source {
@@ -89,19 +90,20 @@ func (rtr *Router) funnelEvents(sink chan api.Event, source <-chan api.Event) {
 }
 
 // forwardEvent forwards the event given as argument to peripherals based on the configured routes.
-func (rtr *router) forwardEvent(ev api.Event) error {
+func (rtr *Router) forwardEvent(ev api.Event) error {
 	evsrc := ev.GetSourceIdentifier()
-	r.log.Debugf("forwarding event from source \"%s\"", evsrc)
+	rtr.log.Debugf("forwarding event from source \"%s\"", evsrc)
 
-	if dsts, ok := r.routes[evsrc]; ok {
-		r.log.Debugf("forwarding to %d destinations\n", len(dsts))
+	if dsts, ok := rtr.routes[evsrc]; ok {
+		rtr.log.Debugf("forwarding to %d destinations\n", len(dsts))
 		for _, dst := range dsts {
-			for _, prl := range r.peripherals {
+			fn := func(prl api.Peripheral) {
 				if prl.GetIdentifier() == dst {
 					prl.GetEventsInChannel() <- ev
-					r.log.Debugf("event forwarded to destination \"%s\"", prl.GetIdentifier())
+					rtr.log.Debugf("event forwarded to destination \"%s\"", prl.GetIdentifier())
 				}
 			}
+			rtr.core.ForEachPeripheral(fn)
 		}
 	} else {
 		return fmt.Errorf("event received with invalid source identifier \"%s\"", evsrc)

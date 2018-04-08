@@ -7,9 +7,20 @@ import (
 	"io"
 )
 
+// Options is a utility struct type which combines all options for a router. Each method of this type returns a
+// function, which applies a specific configuration to a Router object. This type is called Options (and not
+// RouterOptions) because of a suggestion made by the go linter.
+type Options struct {
+}
+
+// NewOptions generates a new *Options instance which can be used to set options for a new Router instance.
+func NewOptions() *Options {
+	return new(Options)
+}
+
 // Logging sets the io.Writer instance to write logging messages to and the verbosity level.
-func Logging(writer io.Writer, level uint) func(Router) error {
-	return func(rtr Router) error {
+func (ropts *Options) Logging(writer io.Writer, level uint) func(*Router) error {
+	return func(rtr *Router) error {
 		if writer == nil {
 			return errors.New("writer argument cannot be nil")
 		}
@@ -19,23 +30,20 @@ func Logging(writer io.Writer, level uint) func(Router) error {
 	}
 }
 
-// Peripherals sets the emersyx Peripheral instances for the router.
-func Peripherals(prls ...api.Peripheral) func(Router) error {
-	return func(rtr Router) error {
-		rtr.peripherals = make([]api.Peripheral, 0)
-		for _, prl := range prls {
-			if prl == nil {
-				return errors.New("a peripheral cannot be nil")
-			}
-			rtr.procs = append(rtr.peripherals, prl)
+// Core sets the api.Core instance which provides services to the router.
+func (ropts *Options) Core(core api.Core) func(*Router) error {
+	return func(rtr *Router) error {
+		if core == nil {
+			return errors.New("core argument cannot be nil")
 		}
+		rtr.core = core
 		return nil
 	}
 }
 
 // Routes sets the emersyx routes required to forward events between components.
-func Routes(routes map[string][]string) func(Router) error {
-	return func(rtr Router) error {
+func (ropts *Options) Routes(routes map[string][]string) func(*Router) error {
+	return func(rtr *Router) error {
 		rtr.routes = make(map[string][]string)
 		for src, dsts := range routes {
 			if len(src) == 0 {

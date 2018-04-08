@@ -1,29 +1,28 @@
 package main
 
 import (
-	"emersyx.net/emersyx/api"
+	"fmt"
+	"os"
 )
 
 func main() {
 	parseFlags()
-	initLogging()
 	loadConfig()
+	err := initLogging()
 
-	rtr := newRouter()
-	gws := initGateways()
-	procs := initProcessors(rtr)
-	routes := initRoutes()
-
-	initRouter(rtr, gws, procs, routes)
-
-	ce := emcomapi.NewCoreEvent(api.CoreUpdate, api.ComponentsLoaded)
-	for _, gw := range gws {
-		if ch := gw.GetEventsInChannel(); ch != nil {
-			ch <- ce
-		}
+	core, err := newCore()
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("could not initialize the emersyx core")
+		os.Exit(1)
 	}
-	for _, proc := range procs {
-		proc.GetEventsInChannel() <- ce
+
+	routes := loadRoutes()
+	rtr, err := newRouter(core, routes)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("could not initialize the router")
+		os.Exit(1)
 	}
 
 	rtr.Run()

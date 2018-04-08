@@ -1,50 +1,25 @@
-[[processors]]
-plugin_path = "path/to/emi2t.so"
-identifier = "emi2t"
-config = "path/to/emi2t.toml"
+log_stdout = true
+log_level = 4
 
-[[processors]]
-plugin_path = "path/to/emirc_voice.so"
-identifier = "emirc_voice"
-config = "path/to/emirc_voice.toml"
-
-[[IRCGateways]]
+[[peripherals]]
+identifier = "emirc"
+config_path = "path/to/emirc.toml"
 plugin_path = "path/to/emirc.so"
-identifier = "example_irc_id"
-nick = "emersyx"
-ident = "emersyx"
-name = "emersyx"
-version = "alpha"
-server_address = "chat.freenode.net"
-server_port = 6697
-server_use_ssl = true
-quit_message = "bye from emersyx!"
 
-[[TelegramGateways]]
+[[peripherals]]
+identifier = "emtg"
+config_path = "path/to/emtg.toml"
 plugin_path = "path/to/emtg.so"
-identifier = "example_telegram_id"
-api_token = "Telegram Bot API token"
-updates_limit = 100
-updates_timeout = 60
-updates_allowed = [
-    "message",
-    "edited_message",
-    "channel_post",
-    "edited_channel_post",
-    "inline_query",
-    "chosen_inline_result",
-    "callback_query",
-    "shipping_query",
-    "pre_checkout_query"
-]
 
-[router]
-plugin_path = "path/to/emrouter.so"
+[[peripherals]]
+identifier = "emi2t"
+config_path = "path/to/emi2t.toml"
+plugin_path = "path/to/emi2t.so"
 
 [[routes]]
-source = "example_irc_id"
-destination = [ "emi2t", "emirc_voice" ]
+source = "emirc"
+destinations = [ "emi2t" ]
 
 [[routes]]
-source = "example_telegram_id"
-destination = [ "emi2t" ]
+source = "emtg"
+destinations = [ "emi2t" ]
