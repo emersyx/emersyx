@@ -19,7 +19,7 @@ notifications:
     email: true
 
 # we are using vanity imports, so change the import path
-go_import_path: emersyx.net/emersyx_core
+go_import_path: emersyx.net/emersyx
 
 # run make
 install: false
