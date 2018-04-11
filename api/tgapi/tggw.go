@@ -1,5 +1,9 @@
 package tgapi
 
+import (
+	"emersyx.net/emersyx/api"
+)
+
 // TelegramParameters is the interface type which should be implemented to enable setting of parameter values when
 // making calls to the Telegram Bot API.
 type TelegramParameters interface {
@@ -26,8 +30,8 @@ type TelegramParameters interface {
 // The TelegramGateway interface specifies the methods that must be implemented by a complete Telegram peripheral and
 // receptor. The reference implementation at https://github.com/emersyx/emersyx_telegram follows this interface.
 type TelegramGateway interface {
-	Peripheral
-	Receptor
+	api.Peripheral
+	api.Receptor
 	// This method must call the getMe method from the Telegram Bot API. It must return the response formatted into a
 	// User instance.
 	GetMe() (User, error)
