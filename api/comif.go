@@ -23,7 +23,7 @@ type PeripheralOptions interface {
 	Identifier(id string) func(Peripheral) error
 	// ConfigPath sets the path to the configuration file from which the peripheral instance loads additional
 	// configuration options.
-	ConfigPath(cfg string) func(Peripheral) error
+	ConfigPath(path string) func(Peripheral) error
 	// Core must set the emersyx core instance to be used when requiring its services.
 	Core(core Core) func(Peripheral) error
 }
