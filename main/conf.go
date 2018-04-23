@@ -42,15 +42,4 @@ func loadConfig() {
 		fmt.Printf(err.Error())
 		fmt.Printf("error occured while loading the configuration file")
 	}
-
-	// the command line argument have priority over the values from the config file
-	if flLogStdout != nil {
-		ec.LogStdout = *flLogStdout
-	}
-	if flLogFile != nil {
-		ec.LogFile = *flLogFile
-	}
-	if flLogLevel != nil {
-		ec.LogLevel = *flLogLevel
-	}
 }

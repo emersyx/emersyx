@@ -5,7 +5,6 @@ import (
 	"emersyx.net/emersyx/log"
 	"errors"
 	"fmt"
-	"plugin"
 )
 
 // core is the type implementing the emersyx core component. It loads all peripherals, and provides services to them
@@ -21,7 +20,7 @@ func newCore() (*core, error) {
 	c := new(core)
 	c.peripherals = make(map[string]api.Peripheral)
 
-	c.log, err = log.NewEmersyxLogger(ec.LogWriter, "emcore", ec.LogLevel)
+	c.log, err = log.NewEmersyxLogger(ec.LogWriter, "core", ec.LogLevel)
 	if err != nil {
 		// do not use the logger here since it might have not been initialized
 		fmt.Println(err.Error())
@@ -43,34 +42,29 @@ func newCore() (*core, error) {
 // configuration file.
 func (c *core) loadPeripherals() error {
 	for _, pcfg := range ec.Peripherals {
-		plug, err := plugin.Open(pcfg.PluginPath)
-		if err != nil {
-			return err
-		}
-
-		opts, err := api.NewPeripheralOptions(plug)
-		if err != nil {
-			return err
-		}
-
-		peripheral, err := api.NewPeripheral(plug,
-			opts.Logging(ec.LogWriter, ec.LogLevel),
-			opts.Identifier(pcfg.Identifier),
-			opts.ConfigPath(pcfg.ConfigPath),
-			opts.Core(c),
+		prl, err := api.NewPeripheral(
+			api.PeripheralOptions{
+				Identifier: pcfg.Identifier,
+				Core:       c,
+				LogWriter:  ec.LogWriter,
+				LogLevel:   ec.LogLevel,
+				ConfigPath: pcfg.ConfigPath,
+			},
+			pcfg.PluginPath,
 		)
 		if err != nil {
+			c.log.Errorf("could occured while calling \"NewPeripheral\" from plugin file \"%s\"\n", pcfg)
 			return err
 		}
-
-		c.peripherals[pcfg.Identifier] = peripheral
+		c.peripherals[pcfg.Identifier] = prl
 	}
 
 	// after loading all peripherals, send the core update that all components have been loaded
 	ce := api.NewCoreEvent(api.CoreUpdate, api.PeripheralsLoaded)
-	for _, peripheral := range c.peripherals {
-		if ch := peripheral.GetEventsInChannel(); ch != nil {
-			ch <- ce
+	for _, prl := range c.peripherals {
+		proc, ok := prl.(api.Processor)
+		if ok {
+			proc.GetEventsInChannel() <- ce
 		}
 	}
 
@@ -80,8 +74,8 @@ func (c *core) loadPeripherals() error {
 // GetPeripheral searches for the api.Peripheral object with the specified identifier. The boolean return value
 // specifies if the instance with the desired ID has been found or not.
 func (c *core) GetPeripheral(id string) (api.Peripheral, bool) {
-	peripheral, ok := c.peripherals[id]
-	return peripheral, ok
+	prl, ok := c.peripherals[id]
+	return prl, ok
 }
 
 // ForEachPeripheral applies the function received as argument to all api.Peripheral objects loaded by the emersyx core.
@@ -92,8 +86,8 @@ func (c *core) ForEachPeripheral(f func(api.Peripheral)) (e error) {
 		}
 	}()
 
-	for _, peripheral := range c.peripherals {
-		f(peripheral)
+	for _, prl := range c.peripherals {
+		f(prl)
 	}
 
 	return

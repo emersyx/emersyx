@@ -1,5 +1,5 @@
 emersyx: goget
-	@go build -o emersyx ./core/*
+	@go build -o emersyx ./main/*
 
 .PHONY: goget
 goget:
@@ -9,7 +9,7 @@ goget:
 .PHONY: test
 test: emersyx
 	@echo "Running the tests with gofmt, go vet and golint..."
-	@test -z $(shell gofmt -s -l core/*.go api/*.go router/*.go log/*.go)
+	@test -z $(shell gofmt -s -l main/*.go api/*.go log/*.go)
 	@go vet ./...
 	@golint -set_exit_status $(shell go list ./...)
-	@cd core; go test -v -conffile ../config.toml
+	@cd main; go test -v -conffile ../config.toml

@@ -1,21 +1,10 @@
 package main
 
 import (
-	"emersyx.net/emersyx/router"
 	"flag"
 	"io"
 	"os"
 )
-
-// flLogStdout holds the value of the command line flag which specifies whether to print logging messages to standard
-// output or not.
-var flLogStdout *bool
-
-// flLogFile holds the value of the command line flag which specifies the file to write logging messages to.
-var flLogFile *string
-
-// flLogLevel holds the value of the command line flag which specifies the logging level.
-var flLogLevel *uint
 
 // flConfFile holds the value of the command line flag which specifies the emersyx configuration file.
 var flConfFile *string
@@ -23,9 +12,6 @@ var flConfFile *string
 // parseFlags parses the command line arguments given to the emersyx binary.
 func parseFlags() {
 	// set the expected flags
-	flLogStdout = flag.Bool("logstdout", false, "log to standard output")
-	flLogFile = flag.String("logfile", "", "file to store logs into")
-	flLogLevel = flag.Uint("loglevel", 0, "logging verbosity level")
 	flConfFile = flag.String("conffile", "", "file to read configuration parameters from")
 
 	// parse the flags
@@ -37,12 +23,12 @@ func parseFlags() {
 func initLogging() error {
 	var sinks []io.Writer
 
-	if flLogStdout != nil && *flLogStdout == true {
+	if ec.LogStdout == true {
 		sinks = append(sinks, os.Stdout)
 	}
 
-	if len(*flLogFile) > 0 {
-		f, err := os.OpenFile(*flLogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if len(ec.LogFile) > 0 {
+		f, err := os.OpenFile(ec.LogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			return err
 		}
@@ -75,12 +61,14 @@ func loadRoutes() map[string][]string {
 
 // newRouter creates an api.Router object as specified in the emersyx configuration file. Under the hood, the
 // router.NewRouter function is used.
-func newRouter(c *core, routes map[string][]string) (*router.Router, error) {
-	ropt := router.NewOptions()
-	rtr, err := router.NewRouter(
-		ropt.Logging(ec.LogWriter, *flLogLevel),
-		ropt.Core(c),
-		ropt.Routes(routes),
+func newRouter(c *core, routes map[string][]string) (*Router, error) {
+	rtr, err := NewRouter(
+		RouterOptions{
+			Core:      c,
+			LogWriter: ec.LogWriter,
+			LogLevel:  ec.LogLevel,
+			Routes:    routes,
+		},
 	)
 	if err != nil {
 		return nil, err
