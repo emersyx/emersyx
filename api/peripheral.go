@@ -55,21 +55,6 @@ type PeripheralOptions struct {
 	ConfigPath string
 }
 
-// Validate performs basic validation of the members of the PeripheralOptions instance. An error is returned if either
-// member is found to have invalid values.
-func (opts PeripheralOptions) Validate() error {
-	if len(opts.Identifier) == 0 {
-		return errors.New("identifier value cannot have zero length")
-	}
-	if opts.Core == nil {
-		return errors.New("core cannot be nil")
-	}
-	if opts.LogWriter == nil {
-		return errors.New("writer cannot be nil")
-	}
-	return nil
-}
-
 // NewPeripheral is a utility wrapper function. It opens a go plugin from the specified path and looks up the function
 // with the same name. On success, it calls the exported function with the the options given as argument, and returns
 // the same values as returned by the exported function. On failure, it returns an error.
