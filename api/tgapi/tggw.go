@@ -7,6 +7,14 @@ import (
 // TelegramParameters is the interface type which should be implemented to enable setting of parameter values when
 // making calls to the Telegram Bot API.
 type TelegramParameters interface {
+	// Offset must set the offset parameter.
+	Offset(value int64) error
+	// Limit must set the limit parameter.
+	Limit(value uint) error
+	// Timeout must set the timeout parameter.
+	Timeout(value uint) error
+	// AllowedUpdates must set the allowed_updates parameter.
+	AllowedUpdates(values ...string) error
 	// ChatID must set the chat_id parameter. In the official documentation this parameter is of type Integer or String.
 	// If you wish to use an Integer as parameter, then simply pass a go string object with the contents of the Integer.
 	ChatID(value string) error

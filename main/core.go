@@ -2,7 +2,6 @@ package main
 
 import (
 	"emersyx.net/emersyx/api"
-	"emersyx.net/emersyx/log"
 	"errors"
 	"fmt"
 )
@@ -11,7 +10,7 @@ import (
 // (e.g. finding other peripherals by ID). This type implements the api.Core interface.
 type core struct {
 	peripherals map[string]api.Peripheral
-	log         *log.EmersyxLogger
+	log         *api.EmersyxLogger
 }
 
 // newCore generates a new *core instance.
@@ -20,7 +19,7 @@ func newCore() (*core, error) {
 	c := new(core)
 	c.peripherals = make(map[string]api.Peripheral)
 
-	c.log, err = log.NewEmersyxLogger(ec.LogWriter, "core", ec.LogLevel)
+	c.log, err = api.NewEmersyxLogger(ec.LogWriter, "core", ec.LogLevel)
 	if err != nil {
 		// do not use the logger here since it might have not been initialized
 		fmt.Println(err.Error())
@@ -40,8 +39,10 @@ func newCore() (*core, error) {
 
 // initPeripherals creates and initializez api.Peripheral objects for all peripherals specified in the emersyx
 // configuration file.
+// TODO make this function multi-threaded and load all peripherals at the same time instead of sequentially.
 func (c *core) loadPeripherals() error {
 	for _, pcfg := range ec.Peripherals {
+		c.log.Debugf("creating peripheral %s\n", pcfg.Identifier)
 		prl, err := api.NewPeripheral(
 			api.PeripheralOptions{
 				Identifier: pcfg.Identifier,

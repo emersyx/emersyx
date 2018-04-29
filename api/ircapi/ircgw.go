@@ -9,12 +9,6 @@ import (
 type IRCGateway interface {
 	api.Peripheral
 	api.Receptor
-	// Connect must start the connection process to the selected IRC server. This must be a blocking method. When the
-	// method returns, the IRCGateway must connected to the IRC server if the return value is nil. Otherwise, it is
-	// considered that an error occurred and the connection was not possible.
-	Connect() error
-	// IsConnected must return a boolean which is true if the gateway is connected to the server, and false otherwise.
-	IsConnected() bool
 	// Quit must disconnect the IRCGateway from the IRC server. This must be a blocking method. When the method
 	// returns, the instance must not be connected to the IRC server anymore.
 	Quit() error

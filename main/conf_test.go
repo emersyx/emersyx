@@ -1,13 +1,17 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"testing"
 )
 
 func TestMain(m *testing.M) {
-	parseFlags()
+	// parse command line arguments
+	flConfFile = flag.String("conffile", "", "file to read configuration parameters from")
+	flag.Parse()
+
 	loadConfig()
 	os.Exit(m.Run())
 }
