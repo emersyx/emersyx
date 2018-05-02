@@ -55,6 +55,30 @@ type PeripheralOptions struct {
 	ConfigPath string
 }
 
+// PeripheralBase is the base type on which Peripheral type should be build. It is not mandatory for a Peripheral type
+// to embed the PeripheralBase, from the point of view of the emersyx platform. However it can be embedded to provide
+// some of the basic functionality out of the box.
+type PeripheralBase struct {
+	Identifier string
+	Core       Core
+	Log        *EmersyxLogger
+}
+
+// InitializeBase performs basic validation and initializtion of a PeripheralBase object.
+func (pb *PeripheralBase) InitializeBase(opts PeripheralOptions) error {
+	var err error
+	if len(opts.Identifier) == 0 {
+		return errors.New("identifier cannot have 0 length")
+	}
+	pb.Identifier = opts.Identifier
+	pb.Core = opts.Core
+	pb.Log, err = NewEmersyxLogger(opts.LogWriter, opts.Identifier, opts.LogLevel)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // NewPeripheral is a utility wrapper function. It opens a go plugin from the specified path and looks up the function
 // with the same name. On success, it calls the exported function with the the options given as argument, and returns
 // the same values as returned by the exported function. On failure, it returns an error.
