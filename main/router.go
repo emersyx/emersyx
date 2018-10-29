@@ -6,9 +6,9 @@ import (
 	"fmt"
 )
 
-// router provides the functionality to route emersyx events between the different components (i.e. the core plus
+// emersyxRouter provides the functionality to route emersyx events between the different components (i.e. the core plus
 // peripherals) loaded by emersyx.
-type router struct {
+type emersyxRouter struct {
 	core   *emersyxCore
 	routes map[string][]string
 	sink   chan api.Event
@@ -16,14 +16,14 @@ type router struct {
 
 // newRouter creates a new router instance, applies the options given as argument, checks for error conditions and if
 // none are met, returns the object.
-func newRouter(config *emersyxConfig, core *emersyxCore) (*router, error) {
+func newRouter(config *emersyxConfig, core *emersyxCore) (*emersyxRouter, error) {
 	// validate the core argument
 	if core == nil {
 		return nil, errors.New("core option cannot be nil")
 	}
 
 	// create a new router instance
-	rtr := new(router)
+	rtr := new(emersyxRouter)
 
 	// configure the core and routes
 	rtr.core = core
@@ -36,7 +36,7 @@ func newRouter(config *emersyxConfig, core *emersyxCore) (*router, error) {
 }
 
 // loadRoutes formats the route information from the emersyxConfig member of the core.
-func (rtr *router) loadRoutes(config *emersyxConfig) {
+func (rtr *emersyxRouter) loadRoutes(config *emersyxConfig) {
 	rtr.routes = make(map[string][]string)
 
 	for _, r := range config.Routes {
@@ -54,7 +54,7 @@ func (rtr *router) loadRoutes(config *emersyxConfig) {
 
 // Run starts receiving events from peripherals. The events are forwarded to other peripherals based on the configured
 // routes. The forwardEvent method is used for this purpose.
-func (rtr *router) run() error {
+func (rtr *emersyxRouter) run() error {
 	rtr.core.log.Debugln("funelling all gateways to the sink channel")
 	fn := func(prl api.Peripheral) {
 		// check if the peripheral is also a receptor
@@ -74,13 +74,13 @@ func (rtr *router) run() error {
 		}
 	}
 
-	rtr.core.log.Debugln("exiting the router.Run method")
+	rtr.core.log.Debugln("exiting the emersyxRouter.Run method")
 	return nil
 }
 
 // funnelEvents starts a goroutine which receives events from a source channel and pushes them down the router's sink
 // channel.
-func (rtr *router) funnelEvents(source <-chan api.Event) {
+func (rtr *emersyxRouter) funnelEvents(source <-chan api.Event) {
 	if source != nil {
 		go func() {
 			for ev := range source {
@@ -91,7 +91,7 @@ func (rtr *router) funnelEvents(source <-chan api.Event) {
 }
 
 // forwardEvent forwards the event given as argument to peripherals based on the configured routes.
-func (rtr *router) forwardEvent(ev api.Event) error {
+func (rtr *emersyxRouter) forwardEvent(ev api.Event) error {
 	evsrc := ev.GetSourceIdentifier()
 	rtr.core.log.Debugf("forwarding event from source \"%s\"", evsrc)
 
