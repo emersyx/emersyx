@@ -9,35 +9,25 @@ import (
 // router provides the functionality to route emersyx events between the different components (i.e. the core plus
 // peripherals) loaded by emersyx.
 type router struct {
-	core   api.Core
+	core   *emersyxCore
 	routes map[string][]string
-	log    *api.EmersyxLogger
 	sink   chan api.Event
 }
 
 // newRouter creates a new router instance, applies the options given as argument, checks for error conditions and if
 // none are met, returns the object.
-func newRouter(opts api.PeripheralOptions) (*router, error) {
-	var err error
-
-	// validate options
-	if opts.Core == nil {
+func newRouter(config *emersyxConfig, core *emersyxCore) (*router, error) {
+	// validate the core argument
+	if core == nil {
 		return nil, errors.New("core option cannot be nil")
 	}
 
 	// create a new router instance
 	rtr := new(router)
 
-	rtr.core = opts.Core
-
-	// create a logger, to be updated via options
-	rtr.log, err = api.NewEmersyxLogger(opts.LogWriter, "router", opts.LogLevel)
-	if err != nil {
-		return nil, errors.New("could not create a bare logger")
-	}
-
-	// set up the routing
-	rtr.routes = loadRoutes()
+	// configure the core and routes
+	rtr.core = core
+	rtr.loadRoutes(config)
 
 	// create a sink channel where events from all peripherals are sent
 	rtr.sink = make(chan api.Event, 10)
@@ -45,29 +35,27 @@ func newRouter(opts api.PeripheralOptions) (*router, error) {
 	return rtr, nil
 }
 
-// loadRoutes formats the route information from the global emersyxConfig instance (initialized via loadConfig).
-func loadRoutes() map[string][]string {
-	var m = make(map[string][]string)
+// loadRoutes formats the route information from the emersyxConfig member of the core.
+func (rtr *router) loadRoutes(config *emersyxConfig) {
+	rtr.routes = make(map[string][]string)
 
-	for _, cfg := range ec.Routes {
-		val, ok := m[cfg.Source]
+	for _, r := range config.Routes {
+		val, ok := rtr.routes[r.Source]
 		if ok {
-			val := append(val, cfg.Destinations...)
-			m[cfg.Source] = val
+			val := append(val, r.Destinations...)
+			rtr.routes[r.Source] = val
 		} else {
-			narr := make([]string, len(cfg.Destinations))
-			copy(narr, cfg.Destinations)
-			m[cfg.Source] = narr
+			narr := make([]string, len(r.Destinations))
+			copy(narr, r.Destinations)
+			rtr.routes[r.Source] = narr
 		}
 	}
-
-	return m
 }
 
 // Run starts receiving events from peripherals. The events are forwarded to other peripherals based on the configured
 // routes. The forwardEvent method is used for this purpose.
 func (rtr *router) run() error {
-	rtr.log.Debugln("funelling all gateways to the sink channel")
+	rtr.core.log.Debugln("funelling all gateways to the sink channel")
 	fn := func(prl api.Peripheral) {
 		// check if the peripheral is also a receptor
 		if rec, ok := prl.(api.Receptor); ok {
@@ -79,14 +67,14 @@ func (rtr *router) run() error {
 
 	// start an infinite loop where events are received from the sink channel and forwarded to peripherals based on the
 	// configured routes
-	rtr.log.Debugln("start forwarding events")
+	rtr.core.log.Debugln("start forwarding events")
 	for ev := range rtr.sink {
 		if err := rtr.forwardEvent(ev); err != nil {
 			return err
 		}
 	}
 
-	rtr.log.Debugln("exiting the router.Run method")
+	rtr.core.log.Debugln("exiting the router.Run method")
 	return nil
 }
 
@@ -105,10 +93,10 @@ func (rtr *router) funnelEvents(source <-chan api.Event) {
 // forwardEvent forwards the event given as argument to peripherals based on the configured routes.
 func (rtr *router) forwardEvent(ev api.Event) error {
 	evsrc := ev.GetSourceIdentifier()
-	rtr.log.Debugf("forwarding event from source \"%s\"", evsrc)
+	rtr.core.log.Debugf("forwarding event from source \"%s\"", evsrc)
 
 	if dsts, ok := rtr.routes[evsrc]; ok {
-		rtr.log.Debugf("forwarding to %d destinations\n", len(dsts))
+		rtr.core.log.Debugf("forwarding to %d destinations\n", len(dsts))
 		for _, dst := range dsts {
 			fn := func(prl api.Peripheral) {
 				if prl.GetIdentifier() == dst {
@@ -117,7 +105,7 @@ func (rtr *router) forwardEvent(ev api.Event) error {
 						return
 					}
 					proc.GetEventsInChannel() <- ev
-					rtr.log.Debugf("event forwarded to destination \"%s\"", prl.GetIdentifier())
+					rtr.core.log.Debugf("event forwarded to destination \"%s\"", prl.GetIdentifier())
 				}
 			}
 			rtr.core.ForEachPeripheral(fn)

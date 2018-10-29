@@ -1,65 +1,68 @@
 package main
 
 import (
-	"emersyx.net/emersyx/api"
 	"flag"
 	"fmt"
 	"io"
 	"os"
 )
 
-// flConfFile holds the value of the command line flag which specifies the emersyx configuration file.
-var flConfFile *string
-
 // initLogging configures the io.Writer instance to be used by the emersyx logger.
-func initLogging() error {
+func initLogging(config *emersyxConfig) error {
 	var sinks []io.Writer
 
-	if ec.LogStdout == true {
+	if config.LogStdout == true {
 		sinks = append(sinks, os.Stdout)
 	}
 
-	if len(ec.LogFile) > 0 {
-		f, err := os.OpenFile(ec.LogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if len(config.LogFile) > 0 {
+		f, err := os.OpenFile(config.LogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			return err
 		}
 		sinks = append(sinks, f)
 	}
 
-	ec.LogWriter = io.MultiWriter(sinks...)
+	config.LogWriter = io.MultiWriter(sinks...)
 	return nil
+}
+
+// fail prints the error and message received as arguments. Afterwards, it calls os.Exit with the received exit code
+// argument. This function is called if early initialization of emersyx fails.
+func fail(err error, msg string, code int) {
+	fmt.Println(err)
+	fmt.Println("could not load the configuration file")
+	os.Exit(code)
 }
 
 func main() {
 	// parse command line arguments
-	flConfFile = flag.String("conffile", "", "file to read configuration parameters from")
+	var confFile *string
+	confFile = flag.String("conffile", "", "file to read configuration parameters from")
 	flag.Parse()
 
 	// load the toml configuration file
-	loadConfig()
-
-	// initialize the logger
-	err := initLogging()
-
-	core, err := newCore()
+	config, err := loadConfig(confFile)
 	if err != nil {
-		fmt.Println(err)
-		fmt.Println("could not initialize the emersyx core")
-		os.Exit(1)
+		fail(err, "could not load the configuration file", 1)
 	}
 
-	rtr, err := newRouter(
-		api.PeripheralOptions{
-			Core:      core,
-			LogWriter: ec.LogWriter,
-			LogLevel:  ec.LogLevel,
-		},
-	)
+	// initialize the logger
+	err = initLogging(config)
 	if err != nil {
-		fmt.Println(err)
-		fmt.Println("could not initialize the router")
-		os.Exit(1)
+		fail(err, "could not initialize logging", 2)
+	}
+
+	// create the core
+	core, err := newCore(config)
+	if err != nil {
+		fail(err, "could not initialize the core", 3)
+	}
+
+	// create the router
+	rtr, err := newRouter(config, core)
+	if err != nil {
+		fail(err, "could not initialize the router", 4)
 	}
 
 	rtr.run()

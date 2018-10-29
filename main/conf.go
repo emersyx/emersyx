@@ -1,13 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"github.com/BurntSushi/toml"
 	"io"
 )
-
-// ec is the emersyxConfig global instance which holds all values from the config file.
-var ec emersyxConfig
 
 // peripheralConfig is the struct for holding processor configuration values from the emersyx configuration file.
 type peripheralConfig struct {
@@ -32,14 +28,15 @@ type emersyxConfig struct {
 	Routes      []routeConfig
 }
 
-// loadConfig opens, reads and parses the toml configuration file specified as command line argument. This function must
-// be called after parseFlags().
-func loadConfig() {
+// loadConfig opens, reads and parses the toml configuration file received as argument.
+func loadConfig(confFile *string) (*emersyxConfig, error) {
+	config := new(emersyxConfig)
+
 	// read the parameters from the specified configuration file
-	_, err := toml.DecodeFile(*flConfFile, &ec)
+	_, err := toml.DecodeFile(*confFile, config)
 	if err != nil {
-		// use fmt.Printf as the logger has not been initialized yet
-		fmt.Printf(err.Error())
-		fmt.Printf("error occured while loading the configuration file")
+		return nil, err
 	}
+
+	return config, nil
 }

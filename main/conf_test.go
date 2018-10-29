@@ -7,29 +7,33 @@ import (
 	"testing"
 )
 
+// config is a global *emersyxConfig instance to be used by all test cases.
+var config *emersyxConfig
+
 func TestMain(m *testing.M) {
 	// parse command line arguments
-	flConfFile = flag.String("conffile", "", "file to read configuration parameters from")
+	var confFile *string
+	confFile = flag.String("conffile", "", "file to read configuration parameters from")
 	flag.Parse()
 
-	loadConfig()
+	config, _ = loadConfig(confFile)
 	os.Exit(m.Run())
 }
 
 func TestParsing(t *testing.T) {
-	if len(ec.Peripherals) != 3 {
-		t.Log(fmt.Sprintf("expected 3 peripherals, got %d instead", len(ec.Peripherals)))
+	if len(config.Peripherals) != 3 {
+		t.Log(fmt.Sprintf("expected 3 peripherals, got %d instead", len(config.Peripherals)))
 		t.Fail()
 	}
-	if len(ec.Routes) != 2 {
-		t.Log(fmt.Sprintf("expected 2 routes in the config, got %d instead", len(ec.Routes)))
+	if len(config.Routes) != 2 {
+		t.Log(fmt.Sprintf("expected 2 routes in the config, got %d instead", len(config.Routes)))
 		t.Fail()
 	}
 	if t.Failed() {
 		return
 	}
 
-	peripheral := ec.Peripherals[0]
+	peripheral := config.Peripherals[0]
 	if peripheral.Identifier != "emirc" {
 		t.Log(fmt.Sprintf("incorrect peripheral identifier for emirc, got \"%s\"", peripheral.Identifier))
 		t.Fail()
@@ -43,7 +47,7 @@ func TestParsing(t *testing.T) {
 		t.Fail()
 	}
 
-	rt := ec.Routes[0]
+	rt := config.Routes[0]
 	if rt.Source != "emirc" {
 		t.Log(fmt.Sprintf("incorrect values for the source of the first route, got \"%d\"", len(rt.Source)))
 		t.Fail()

@@ -6,20 +6,20 @@ import (
 	"fmt"
 )
 
-// core is the type implementing the emersyx core component. It loads all peripherals, and provides services to them
-// (e.g. finding other peripherals by ID). This type implements the api.Core interface.
-type core struct {
+// emersyxCore is the type implementing the emersyx core component. It loads all peripherals, and provides services to
+// them (e.g. finding other peripherals by ID). This type implements the api.Core interface.
+type emersyxCore struct {
 	peripherals map[string]api.Peripheral
 	log         *api.EmersyxLogger
 }
 
-// newCore generates a new *core instance.
-func newCore() (*core, error) {
+// newCore generates a new *emersyxCore instance.
+func newCore(config *emersyxConfig) (*emersyxCore, error) {
 	var err error
-	c := new(core)
-	c.peripherals = make(map[string]api.Peripheral)
+	core := new(emersyxCore)
+	core.peripherals = make(map[string]api.Peripheral)
 
-	c.log, err = api.NewEmersyxLogger(ec.LogWriter, "core", ec.LogLevel)
+	core.log, err = api.NewEmersyxLogger(config.LogWriter, "emersyx", config.LogLevel)
 	if err != nil {
 		// do not use the logger here since it might have not been initialized
 		fmt.Println(err.Error())
@@ -27,42 +27,42 @@ func newCore() (*core, error) {
 	}
 
 	// load the peripherals from the configuration file
-	err = c.loadPeripherals()
+	err = core.loadPeripherals(config)
 	if err != nil {
-		c.log.Errorln(err.Error())
-		c.log.Errorln("could not load all peripherals")
+		core.log.Errorln(err.Error())
+		core.log.Errorln("could not load all peripherals")
 		return nil, err
 	}
 
-	return c, nil
+	return core, nil
 }
 
 // initPeripherals creates and initializez api.Peripheral objects for all peripherals specified in the emersyx
 // configuration file.
 // TODO make this function multi-threaded and load all peripherals at the same time instead of sequentially.
-func (c *core) loadPeripherals() error {
-	for _, pcfg := range ec.Peripherals {
-		c.log.Debugf("creating peripheral %s\n", pcfg.Identifier)
+func (core *emersyxCore) loadPeripherals(config *emersyxConfig) error {
+	for _, pcfg := range config.Peripherals {
+		core.log.Debugf("creating peripheral %s\n", pcfg.Identifier)
 		prl, err := api.NewPeripheral(
 			api.PeripheralOptions{
 				Identifier: pcfg.Identifier,
-				Core:       c,
-				LogWriter:  ec.LogWriter,
-				LogLevel:   ec.LogLevel,
+				Core:       core,
+				LogWriter:  config.LogWriter,
+				LogLevel:   config.LogLevel,
 				ConfigPath: pcfg.ConfigPath,
 			},
 			pcfg.PluginPath,
 		)
 		if err != nil {
-			c.log.Errorf("could occured while calling \"NewPeripheral\" from plugin file \"%s\"\n", pcfg)
+			core.log.Errorf("could occured while calling \"NewPeripheral\" from plugin file \"%s\"\n", pcfg)
 			return err
 		}
-		c.peripherals[pcfg.Identifier] = prl
+		core.peripherals[pcfg.Identifier] = prl
 	}
 
 	// after loading all peripherals, send the core update that all components have been loaded
 	ce := api.NewCoreEvent(api.CoreUpdate, api.PeripheralsLoaded)
-	for _, prl := range c.peripherals {
+	for _, prl := range core.peripherals {
 		proc, ok := prl.(api.Processor)
 		if ok {
 			proc.GetEventsInChannel() <- ce
@@ -74,20 +74,20 @@ func (c *core) loadPeripherals() error {
 
 // GetPeripheral searches for the api.Peripheral object with the specified identifier. The boolean return value
 // specifies if the instance with the desired ID has been found or not.
-func (c *core) GetPeripheral(id string) (api.Peripheral, bool) {
-	prl, ok := c.peripherals[id]
+func (core *emersyxCore) GetPeripheral(id string) (api.Peripheral, bool) {
+	prl, ok := core.peripherals[id]
 	return prl, ok
 }
 
 // ForEachPeripheral applies the function received as argument to all api.Peripheral objects loaded by the emersyx core.
-func (c *core) ForEachPeripheral(f func(api.Peripheral)) (e error) {
+func (core *emersyxCore) ForEachPeripheral(f func(api.Peripheral)) (e error) {
 	defer func() {
 		if r := recover(); r != nil {
 			e = r.(error)
 		}
 	}()
 
-	for _, prl := range c.peripherals {
+	for _, prl := range core.peripherals {
 		f(prl)
 	}
 
