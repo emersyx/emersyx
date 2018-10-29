@@ -1,6 +1,7 @@
 package main
 
 import (
+	"emersyx.net/emersyx/api"
 	"flag"
 	"fmt"
 	"io"
@@ -65,5 +66,9 @@ func main() {
 		fail(err, "could not initialize the router", 4)
 	}
 
+	// start the router
 	rtr.run()
+
+	// after starting the router, inform all peripherals
+	core.sendEvent(api.CoreUpdate, api.RouterStarted)
 }

@@ -60,16 +60,21 @@ func (core *emersyxCore) loadPeripherals(config *emersyxConfig) error {
 		core.peripherals[pcfg.Identifier] = prl
 	}
 
-	// after loading all peripherals, send the core update that all components have been loaded
-	ce := api.NewCoreEvent(api.CoreUpdate, api.PeripheralsLoaded)
+	// after loading all peripherals, send them the core event
+	core.sendEvent(api.CoreUpdate, api.PeripheralsLoaded)
+
+	return nil
+}
+
+// sendEvent sends a new event to all peripherals with the specified type and status.
+func (core *emersyxCore) sendEvent(evType string, evStatus string) {
+	ev := api.NewCoreEvent(api.CoreUpdate, api.PeripheralsLoaded)
 	for _, prl := range core.peripherals {
 		proc, ok := prl.(api.Processor)
 		if ok {
-			proc.GetEventsInChannel() <- ce
+			proc.GetEventsInChannel() <- ev
 		}
 	}
-
-	return nil
 }
 
 // GetPeripheral searches for the api.Peripheral object with the specified identifier. The boolean return value

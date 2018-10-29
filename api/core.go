@@ -35,14 +35,14 @@ type CoreEvent struct {
 }
 
 // GetSourceIdentifier returns the constant value CoreID.
-func (ce CoreEvent) GetSourceIdentifier() string {
+func (ev CoreEvent) GetSourceIdentifier() string {
 	return CoreID
 }
 
 // NewCoreEvent is a utility function for creating CoreEvent instances with the specified type and status fields.
-func NewCoreEvent(t string, s string) CoreEvent {
-	var ce CoreEvent
-	ce.Type = t
-	ce.Status = s
-	return ce
+func NewCoreEvent(evType string, evStatus string) CoreEvent {
+	var ev CoreEvent
+	ev.Type = evType
+	ev.Status = evStatus
+	return ev
 }
