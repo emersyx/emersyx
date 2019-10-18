@@ -4,7 +4,7 @@ emersyx: goget
 .PHONY: goget
 goget:
 	@go get github.com/BurntSushi/toml
-	@go get github.com/golang/lint/golint
+	@go get golang.org/x/lint/golint
 
 .PHONY: test
 test: emersyx
