@@ -1,10 +1,9 @@
 package telegram
 
-// The structs below have been automatically generated using the tgdocs2go tool. The tool is part of the emersyx project
-// and can be found at https://github.com/emersyx/tgdocs2go.
-
 // Update type with fields compatible to the Telegram Bot API.
 // https://core.telegram.org/bots/api#Update
+// The Source member is mandatory for emersyx to identify the Gateway instance which generated this event. This is the
+// only member that is not present in the Telegram Bot API.
 type Update struct {
 	UpdateID           int64               `json:"update_id"`
 	Message            *Message            `json:"message"`
@@ -16,6 +15,12 @@ type Update struct {
 	CallbackQuery      *CallbackQuery      `json:"callback_query"`
 	ShippingQuery      *ShippingQuery      `json:"shipping_query"`
 	PreCheckoutQuery   *PreCheckoutQuery   `json:"pre_checkout_query"`
+	Source             string
+}
+
+// GetSourceIdentifier returns the identifier of the Gateway instance which generated the emersyx event.
+func (u Update) GetSourceIdentifier() string {
+	return u.Source
 }
 
 // User type with fields compatible to the Telegram Bot API.
