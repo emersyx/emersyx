@@ -1,8 +1,6 @@
 package irc
 
-import (
-	"emersyx.net/emersyx/pkg/api"
-)
+import "emersyx.net/emersyx/pkg/api"
 
 // Gateway is the interface which for an IRC peripheral and receptor. The reference implementation at
 // https://github.com/emersyx/emersyx_irc follows this interface.
