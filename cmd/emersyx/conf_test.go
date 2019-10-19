@@ -10,17 +10,24 @@ import (
 // config is a global *emersyxConfig instance to be used by all test cases.
 var config *emersyxConfig
 
+// confFile is the path to the configuration file to be loaded during testing.
+var confFile *string
+
 func TestMain(m *testing.M) {
 	// parse command line arguments
-	var confFile *string
 	confFile = flag.String("conffile", "", "file to read configuration parameters from")
 	flag.Parse()
 
-	config, _ = loadConfig(confFile)
 	os.Exit(m.Run())
 }
 
 func TestParsing(t *testing.T) {
+	config, err := loadConfig(confFile)
+	if err != nil {
+		t.Log(fmt.Sprintf("error occured while loading the configuration file - %s", err.Error()))
+		t.Fail()
+	}
+
 	if len(config.Peripherals) != 3 {
 		t.Log(fmt.Sprintf("expected 3 peripherals, got %d instead", len(config.Peripherals)))
 		t.Fail()

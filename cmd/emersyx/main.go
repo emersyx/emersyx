@@ -1,7 +1,7 @@
 package main
 
 import (
-	"emersyx.net/emersyx/api"
+	"emersyx.net/emersyx/pkg/api"
 	"flag"
 	"fmt"
 	"io"

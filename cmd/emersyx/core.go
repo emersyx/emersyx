@@ -1,7 +1,8 @@
 package main
 
 import (
-	"emersyx.net/emersyx/api"
+	"emersyx.net/emersyx/pkg/api"
+	"emersyx.net/emersyx/pkg/log"
 	"errors"
 	"fmt"
 )
@@ -10,7 +11,7 @@ import (
 // them (e.g. finding other peripherals by ID). This type implements the api.Core interface.
 type emersyxCore struct {
 	peripherals map[string]api.Peripheral
-	log         *api.EmersyxLogger
+	log         *log.EmersyxLogger
 }
 
 // newCore generates a new *emersyxCore instance.
@@ -19,7 +20,7 @@ func newCore(config *emersyxConfig) (*emersyxCore, error) {
 	core := new(emersyxCore)
 	core.peripherals = make(map[string]api.Peripheral)
 
-	core.log, err = api.NewEmersyxLogger(config.LogWriter, "emersyx", config.LogLevel)
+	core.log, err = log.NewEmersyxLogger(config.LogWriter, "emersyx", config.LogLevel)
 	if err != nil {
 		// do not use the logger here since it might have not been initialized
 		fmt.Println(err.Error())

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"emersyx.net/emersyx/pkg/log"
 	"errors"
 	"fmt"
 	"io"
@@ -61,7 +62,7 @@ type PeripheralOptions struct {
 type PeripheralBase struct {
 	Identifier string
 	Core       Core
-	Log        *EmersyxLogger
+	Log        *log.EmersyxLogger
 }
 
 // InitializeBase performs basic validation and initializtion of a PeripheralBase object.
@@ -72,7 +73,7 @@ func (pb *PeripheralBase) InitializeBase(opts PeripheralOptions) error {
 	}
 	pb.Identifier = opts.Identifier
 	pb.Core = opts.Core
-	pb.Log, err = NewEmersyxLogger(opts.LogWriter, opts.Identifier, opts.LogLevel)
+	pb.Log, err = log.NewEmersyxLogger(opts.LogWriter, opts.Identifier, opts.LogLevel)
 	if err != nil {
 		return err
 	}

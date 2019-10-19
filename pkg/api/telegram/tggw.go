@@ -1,12 +1,12 @@
-package tgapi
+package telegram
 
 import (
-	"emersyx.net/emersyx/api"
+	"emersyx.net/emersyx/pkg/api"
 )
 
-// TelegramParameters is the interface type which should be implemented to enable setting of parameter values when
-// making calls to the Telegram Bot API.
-type TelegramParameters interface {
+// Parameters is the interface type which should be implemented to enable setting of parameter values when making calls
+// to the Telegram Bot API.
+type Parameters interface {
 	// Offset must set the offset parameter.
 	Offset(value int64) error
 	// Limit must set the limit parameter.
@@ -35,9 +35,9 @@ type TelegramParameters interface {
 	ReplyMarkup(value string) error
 }
 
-// The TelegramGateway interface specifies the methods that must be implemented by a complete Telegram peripheral and
-// receptor. The reference implementation at https://github.com/emersyx/emersyx_telegram follows this interface.
-type TelegramGateway interface {
+// The Gateway interface specifies the methods that must be implemented by a complete Telegram peripheral and receptor.
+// The reference implementation at https://github.com/emersyx/emersyx_telegram follows this interface.
+type Gateway interface {
 	api.Peripheral
 	api.Receptor
 	// This method must call the getMe method from the Telegram Bot API. It must return the response formatted into a
@@ -45,8 +45,8 @@ type TelegramGateway interface {
 	GetMe() (User, error)
 	// This method must call the sendMessage method from the Telegram Bot API. The method must return the response
 	// formatted into a Message object.
-	SendMessage(params TelegramParameters) (Message, error)
-	// This method must return a new TelegramParameters instance which can be used as argument to the other methods of
-	// the TelegramGateway type.
-	NewTelegramParameters() TelegramParameters
+	SendMessage(params Parameters) (Message, error)
+	// This method must return a new Parameters instance which can be used as argument to the other methods of the
+	// Gateway type.
+	NewParameters() Parameters
 }

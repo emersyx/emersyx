@@ -1,4 +1,4 @@
-package tgapi
+package telegram
 
 // The structs below have been automatically generated using the tgdocs2go tool. The tool is part of the emersyx project
 // and can be found at https://github.com/emersyx/tgdocs2go.
