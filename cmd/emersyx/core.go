@@ -55,7 +55,7 @@ func (core *emersyxCore) loadPeripherals(config *emersyxConfig) error {
 			pcfg.PluginPath,
 		)
 		if err != nil {
-			core.log.Errorf("could occured while calling \"NewPeripheral\" from plugin file \"%s\"\n", pcfg)
+			core.log.Errorf("error occured while calling \"NewPeripheral\" from plugin file \"%s\"\n", pcfg)
 			return err
 		}
 		core.peripherals[pcfg.Identifier] = prl

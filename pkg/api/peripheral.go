@@ -3,7 +3,6 @@ package api
 import (
 	"emersyx.net/emersyx/pkg/log"
 	"errors"
-	"fmt"
 	"io"
 	"plugin"
 )
@@ -87,19 +86,16 @@ func NewPeripheral(opts PeripheralOptions, path string) (Peripheral, error) {
 
 	plug, err := plugin.Open(path)
 	if err != nil {
-		err := fmt.Errorf("could not open plugin file %s", path)
 		return nil, err
 	}
 
 	f, err := plug.Lookup("NewPeripheral")
 	if err != nil {
-		err := errors.New("plugin does not export NewPeripheral")
 		return nil, err
 	}
 
 	fc, ok := f.(func(opts PeripheralOptions) (Peripheral, error))
 	if ok == false {
-		err := errors.New("function NewPeripheral has incorrect signature")
 		return nil, err
 	}
 
