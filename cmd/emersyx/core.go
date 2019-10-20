@@ -1,8 +1,8 @@
 package main
 
 import (
-	"emersyx.net/emersyx/pkg/api"
-	"emersyx.net/emersyx/pkg/log"
+	"emersyx.net/common/pkg/api"
+	"emersyx.net/common/pkg/log"
 	"errors"
 	"fmt"
 )
